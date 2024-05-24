@@ -23,44 +23,23 @@ app.use(cors());
 io.on('connection', (socket) => {
     // console.log('userType: ',socket.handshake.query.userType);
     console.log('User Connected');
-    console.log('id ', socket.id);
+    console.log('id ', socket.id, io.sockets.id);
 
     socket.emit('welcome', 'Welcome to the Socket.io Server!!!!!')
-    // io.emit('welcome', 'Welcome to the Socket.io Server!!!!!')
 
-    var users = [{customer: '', partner: ''}]
-
-    if(socket.handshake.query.userType == 'Customer'){
-        users.customer = socket.handshake.query.userType;
-    }
-
-    if(socket.handshake.query.userType == 'Partner'){
-        users.partner = socket.handshake.query.userType;
-    }
-
-
-    console.log('users : ', users.customer, users.partner);
-
-    if(socket.handshake.query.userType == 'customer'){
-        socket.emit('customer-online', 'Customer Online');
-    }
-
-    socket.on('customer', (c)=>{
-        console.log('customer : ', c);
-        socket.emit('customer-online', c);
+    Object.keys(io.sockets.sockets).forEach(function(id) {
+        console.log("ID:",id)  // socketId
     })
 
-    socket.on('partner', (c)=>{
-        console.log('partner : ', c);
-        socket.emit('partner-online', c);
-    })
+    socket.on('customer-status', (cs) =>{
+        console.log('customer-status ', cs);
+        io.emit("customer-online", cs);
+    });
 
-    // if(socket.handshake.query.userType == 'Customer'){
-    //     socket.emit('customer', 'Customer Online')
-
-    // }else if(socket.handshake.query.userType == 'Partner'){
-    //     socket.emit('partner', 'Partner Online')
-    // }
+    socket.on('partner-status', (ps) =>{
+        console.log('partner-status ', ps);
+        io.emit("partner-online", ps);
+    });
 
     socket.on('chat message', (msg) =>{
         console.log('chat message ', msg);
@@ -68,16 +47,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        console.log('users : ', users.type);
-        users.type.shift(socket.handshake.query.userType);
-
         console.log('User Disconnected: ', socket.id);
-        // if(socket.handshake.query.userType == 'Customer'){
-        //     socket.emit('customer', 'Customer Offline')
-    
-        // }else if(socket.handshake.query.userType == 'Partner'){
-        //     socket.emit('partner', 'Partner Offline')
-        // }
     })
 });
 
