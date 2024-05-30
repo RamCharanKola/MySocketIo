@@ -16,65 +16,90 @@ const io = new Server(server,
 
 app.use(cors());
 
-var users = [];
+var customerID = [];
+var partnerID = [];
 
 io.on('connection', (socket) => {
-
-    console.log(io.of('/').sockets.size);
-    if(io.of('/').sockets.size == 0){
-        users = []
-    }
-    // console.log('userType: ',socket.handshake.query.userType);
-    // users[0] = socket.handshake.query.userType
-    users.push(socket.handshake.query.userType);
-    if(users[0].includes('Customer Online') || users[0].includes('Partner Online')){
-        socket.emit('WhoOnline', `${users[0].includes('Customer Online')?users[0]:users[0].includes('Partner Online')?users[0]:''}`);
+    console.log(socket.handshake.query.userType);
+    console.log('[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[');
+    if(customerID.length > 0 && customerID != ''){
+        socket.emit('customer online', 'Customer Online');
+        console.log('customerID if Online',customerID);
+        customerID.pop();
     }
 
-    console.log('users ', users);
-    console.log('User Connected');
-    // console.log('id ', socket.id, io.sockets.id);
+    if(partnerID.length>0 && partnerID != ''){
+        socket.emit('partner online', 'Partner Online')
+        console.log('partnerID if Online',partnerID);
+        partnerID.pop();
+    }
 
-    socket.emit('welcome', 'Welcome to the Socket.io Server!!!!!')
+    if(socket.handshake.query.userType == 'Customer Online'){
+        customerID.push(socket.id);
+        console.log('customerID after Pppppppppppuuuuuuushhhhhhhiiiiiiinnnnnngggggggg',customerID);
+        socket.emit('customer online', 'Customer Online');
+    }
 
-    // Object.keys(io.sockets.sockets).forEach(function(id) {
-    //     console.log("ID:",id)
-    // })
+    if(socket.handshake.query.userType == 'Partner Online'){
+        partnerID.push(socket.id);
+        console.log('partnerID after Pppppppuuuuuuushhhhhhhhhhiiiiiiiiiiinnnnnnnnnnggggggg',partnerID);
+        socket.emit('partner online', 'Partner Online')
+    }
 
-    socket.on('customer-status', (cs) =>{
-        console.log('customer-status ', cs);
-        io.emit("customer-online", cs);
-        if(cs == 'Customer Offline' && (users[0].includes('Customer Online'))){
-            users.shift()
-            console.log('after shift Customer : ', users);
-            // socket.emit('WhoOnline', `${cs}`);
-        }
-        if(cs == 'Customer Offline' && users.includes('Customer Online')){
-            users.pop()
-            console.log('after pop Customer : ', users);
-        }
-    });
-
-    socket.on('partner-status', (ps) =>{
-        console.log('partner-status ', ps);
-        io.emit("partner-online", ps);
-        if(ps == 'Partner Offline' && (users[0].includes('Partner Online'))){
-            users.shift()
-            console.log('after shift partner: ', users);
-            // socket.emit('WhoOnline', `${ps}`);
-        }
-        if(ps == 'Partner Offline' && users.includes('Partner Online')){
-            users.pop()
-            console.log('after pop partner : ', users);
-        }
-    });
+    socket.emit('welcome', 'Welcome to the Socket.io Server!!!!!');
 
     socket.on('chat message', (msg) =>{
         console.log('chat message ', msg);
-        io.emit("received-message", msg);
+        if(msg.chatData[1] == customerID && partnerID != []){
+            console.log('pppppppppppppppppppppppppppppppppppppppppppp');
+            console.log(partnerID);
+            console.log('pppppppppppppppppppppppppppppppppppppppppppp');
+            socket.emit("received-message", msg.chatData[0]);
+            // partnerID.emit("received-message", msg.chatData[0]);
+        }
+        if(msg.chatData[1] == partnerID && customerID != []){
+            console.log('CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC');
+            console.log(customerID);
+            console.log('CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC');
+            // customerID.emit("received-message", msg.chatData[0]);
+            socket.emit("received-message", msg.chatData[0]);
+        }
+    });
+
+    socket.on('customer-status', (co) =>{
+        console.log('----------------------------------');
+        console.log('Received Customer Status', co);
+        console.log('----------------------------------');
+        if(co == 'Customer Online')  io.emit('customer offline', 'Customer Offline');
+        if(co == 'Customer Offline') io.emit('customer offline', 'Customer Offline');
+    });
+
+    socket.on('partner-status', (po) =>{
+        console.log('____________________________________________________________')
+            console.log('Received Partner Status', po);
+            console.log('____________________________________________________________');
+            if(po == 'Partner Online') io.emit('partner online', 'Partner Online');
+            if(po == 'Partner Offline') io.emit('partner offline', 'Partner Offline');
     });
 
     socket.on('disconnect', () => {
+        if(customerID.includes(socket.id)){
+            console.log('CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
+            console.log('On Customer App Destroyed Before Pop : ', customerID);
+            io.emit('customer offline', 'Customer Offline');
+            customerID.pop()
+            console.log('On Customer App Destroyed After Pop:', customerID);
+            console.log('CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
+        }
+
+        if(partnerID.includes(socket.id)){
+            console.log('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
+            console.log('On Partner App Destroyed :', partnerID);
+            io.emit('partner offline', 'Partner Offline');
+            partnerID.pop()
+            console.log('After Pop on Customer App Destroyed :', );
+            console.log('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
+        }
         console.log('User Disconnected: ', socket.id);
     })
 });
