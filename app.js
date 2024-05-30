@@ -70,7 +70,7 @@ io.on('connection', (socket) => {
         console.log('----------------------------------');
         console.log('Received Customer Status', co);
         console.log('----------------------------------');
-        if(co == 'Customer Online')  io.emit('customer offline', 'Customer Offline');
+        if(co == 'Customer Online')  io.emit('customer online', 'Customer Online');
         if(co == 'Customer Offline') io.emit('customer offline', 'Customer Offline');
     });
 
