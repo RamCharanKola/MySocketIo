@@ -7,6 +7,7 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, 
     {
+    pingInterval: 280000,
     pingTimeout: 300000,
     connectionStateRecovery: {
     // the backup duration of the sessions and the packets
