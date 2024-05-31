@@ -97,7 +97,7 @@ io.on('connection', (socket) => {
             console.log('On Partner App Destroyed :', partnerID);
             io.emit('partner offline', 'Partner Offline');
             partnerID.pop()
-            console.log('After Pop on Customer App Destroyed :', );
+            console.log('After Pop on Partner App Destroyed :', );
             console.log('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
         }
         console.log('User Disconnected: ', socket.id);
