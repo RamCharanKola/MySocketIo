@@ -7,6 +7,13 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, 
     {
+
+    // connectionStateRecovery: {
+    // // the backup duration of the sessions and the packets
+    // maxDisconnectionDuration: 11 * 60 * 1000,
+    // // whether to skip middlewares upon successful recovery
+    // skipMiddlewares: true,
+    // },
     cors: {
         origin: '*',
         methods: ["GET", "POST","HEAD"]
@@ -82,11 +89,12 @@ io.on('connection', (socket) => {
             if(po == 'Partner Offline') io.emit('partner offline', 'Partner Offline');
     });
 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', (d) => {
+        console.log('socket disconnected Reason : ',d);
         if(customerID.includes(socket.id)){
             console.log('CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
             console.log('On Customer App Destroyed Before Pop : ', customerID);
-            io.emit('customer offline', 'Customer Offline');
+            io.emit('customer offline', `${socket.id} Customer Offline`);
             customerID.pop()
             console.log('On Customer App Destroyed After Pop:', customerID);
             console.log('CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
@@ -95,7 +103,7 @@ io.on('connection', (socket) => {
         if(partnerID.includes(socket.id)){
             console.log('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
             console.log('On Partner App Destroyed :', partnerID);
-            io.emit('partner offline', 'Partner Offline');
+            socket.emit('partner offline', `${socket.id} Partner Offline`);
             partnerID.pop()
             console.log('After Pop on Partner App Destroyed :', );
             console.log('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
