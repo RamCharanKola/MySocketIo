@@ -7,13 +7,13 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, 
     {
-    pingTimeout: 660000,
-    // connectionStateRecovery: {
-    // // the backup duration of the sessions and the packets
-    // maxDisconnectionDuration: 11 * 60 * 1000,
-    // // whether to skip middlewares upon successful recovery
-    // skipMiddlewares: true,
-    // },
+    pingTimeout: 300000,
+    connectionStateRecovery: {
+    // the backup duration of the sessions and the packets
+    maxDisconnectionDuration: 60 * 60 * 1000,
+    // whether to skip middlewares upon successful recovery
+    skipMiddlewares: true,
+    },
     cors: {
         origin: '*',
         methods: ["GET", "POST","HEAD"]
