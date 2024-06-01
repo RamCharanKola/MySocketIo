@@ -8,11 +8,11 @@ const server = createServer(app);
 const io = new Server(server, 
     {
     // pingInterval: 120000,
-    // pingTimeout: 10000,
-    connectionStateRecovery: {
-    maxDisconnectionDuration: 2 * 60 * 1000,
-    skipMiddlewares: true,
-    },
+    pingTimeout: 120000,
+    // connectionStateRecovery: {
+    // maxDisconnectionDuration: 2 * 60 * 1000,
+    // skipMiddlewares: true,
+    // },
     cors: {
         origin: '*',
         methods: ["GET", "POST","HEAD"]
@@ -99,7 +99,7 @@ io.on('connection', (socket) => {
             }
     });
 
-    io.on('disconnect', (d) => {
+    socket.on('disconnect', (d) => {
         console.log('socket disconnected Reason : ',d);
         if(customerID.includes(socket.id)){
             console.log('CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
