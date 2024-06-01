@@ -7,8 +7,6 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, 
     {
-    // pingInterval: 120000,
-    // pingTimeout: 120000,
     connectionStateRecovery: {
     maxDisconnectionDuration: Infinity,
     skipMiddlewares: true,
@@ -26,15 +24,12 @@ var customerID = [];
 var partnerID = [];
 
 io.on('connection', (socket) => {
-    console.log('socket.connectionStateRecovery : ', socket.connectionStateRecovery);
-    socket.connectionStateRecovery
     if (socket.recovered) {
         console.log('Connection Recovered ');
       } else {
         console.log('New Connection Established ');
       }
     console.log(socket.handshake.query.userType);
-    console.log('[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[');
     if(customerID.length > 0 && customerID != ''){
         socket.emit('customer online', 'Customer Online');
         console.log('customerID if Online',customerID);
@@ -49,13 +44,13 @@ io.on('connection', (socket) => {
 
     if(socket.handshake.query.userType == 'Customer Online'){
         customerID.push(socket.id);
-        console.log('customerID after Pppppppppppuuuuuuushhhhhhhiiiiiiinnnnnngggggggg',customerID);
+        console.log('After Pushing customerID : ',customerID);
         socket.emit('customer online', 'Customer Online');
     }
 
     if(socket.handshake.query.userType == 'Partner Online'){
         partnerID.push(socket.id);
-        console.log('partnerID after Pppppppuuuuuuushhhhhhhhhhiiiiiiiiiiinnnnnnnnnnggggggg',partnerID);
+        console.log('After Pushing partnerID : ',partnerID);
         socket.emit('partner online', 'Partner Online')
     }
 
@@ -68,21 +63,18 @@ io.on('connection', (socket) => {
             console.log(partnerID);
             console.log('pppppppppppppppppppppppppppppppppppppppppppp');
             socket.emit("received-message", msg.chatData[0]);
-            // partnerID.emit("received-message", msg.chatData[0]);
+            socket.emit("received-message", msg.chatData[0], partnerID);
         }
         if(msg.chatData[1] == partnerID && customerID != []){
             console.log('CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC');
             console.log(customerID);
             console.log('CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC');
-            // customerID.emit("received-message", msg.chatData[0]);
-            socket.emit("received-message", msg.chatData[0]);
+            socket.emit("received-message", msg.chatData[0], customerID);
         }
     });
 
     socket.on('customer-status', (co) =>{
-        console.log('----------------------------------');
         console.log('Received Customer Status', co);
-        console.log('----------------------------------');
         if(co == 'Customer Online')  io.emit('customer online', 'Customer Online');
         if(co == 'Customer Offline') {
             io.emit('customer offline', 'Customer Offline');
@@ -91,9 +83,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('partner-status', (po) =>{
-        console.log('____________________________________________________________')
             console.log('Received Partner Status', po);
-            console.log('____________________________________________________________');
             if(po == 'Partner Online') io.emit('partner online', 'Partner Online');
             if(po == 'Partner Offline') {
                 io.emit('partner offline', 'Partner Offline');
@@ -101,24 +91,20 @@ io.on('connection', (socket) => {
             }
     });
 
-    socket.on('disconnect', (d) => {
-        console.log('socket disconnected Reason : ',d);
+    socket.on('disconnect', (reason) => {
+        console.log('socket disconnected Reason : ', reason);
         if(customerID.includes(socket.id)){
-            console.log('CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
             console.log('On Customer App Destroyed Before Pop : ', customerID);
-            io.emit('customer offline', `${socket.id} Customer Offline`);
+            io.emit('customer offline', `Customer Offline`);
             customerID.pop()
             console.log('On Customer App Destroyed After Pop:', customerID);
-            console.log('CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
         }
 
         if(partnerID.includes(socket.id)){
-            console.log('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
             console.log('On Partner App Destroyed :', partnerID);
-            socket.emit('partner offline', `${socket.id} Partner Offline`);
+            socket.emit('partner offline', `Partner Offline`);
             partnerID.pop()
             console.log('After Pop on Partner App Destroyed :', );
-            console.log('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
         }
         console.log('User Disconnected: ', socket.id);
     })
