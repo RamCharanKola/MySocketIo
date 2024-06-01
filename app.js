@@ -8,9 +8,9 @@ const server = createServer(app);
 const io = new Server(server, 
     {
     // pingInterval: 120000,
-    pingTimeout: 10000,
+    // pingTimeout: 10000,
     connectionStateRecovery: {
-    maxDisconnectionDuration:  20 * 1000,
+    maxDisconnectionDuration: 2 * 60 * 1000,
     skipMiddlewares: true,
     },
     cors: {
