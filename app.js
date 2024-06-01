@@ -8,11 +8,11 @@ const server = createServer(app);
 const io = new Server(server, 
     {
     // pingInterval: 120000,
-    pingTimeout: 120000,
-    // connectionStateRecovery: {
-    // maxDisconnectionDuration: 2 * 60 * 1000,
-    // skipMiddlewares: true,
-    // },
+    // pingTimeout: 120000,
+    connectionStateRecovery: {
+    maxDisconnectionDuration: Infinity,
+    skipMiddlewares: true,
+    },
     cors: {
         origin: '*',
         methods: ["GET", "POST","HEAD"]
@@ -26,6 +26,8 @@ var customerID = [];
 var partnerID = [];
 
 io.on('connection', (socket) => {
+    console.log('socket.connectionStateRecovery : ', socket.connectionStateRecovery);
+    socket.connectionStateRecovery
     if (socket.recovered) {
         console.log('Connection Recovered ');
       } else {
