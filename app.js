@@ -7,7 +7,7 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, 
     {
-    pingTimeout: Infinity,
+    pingTimeout: 24 * 60 * 60 * 1000,
     // connectionStateRecovery: {
     // maxDisconnectionDuration: Infinity,
     // skipMiddlewares: true,
