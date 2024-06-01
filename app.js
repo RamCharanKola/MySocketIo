@@ -8,10 +8,10 @@ const server = createServer(app);
 const io = new Server(server, 
     {
     pingTimeout: 5 * 60 * 1000,
-    connectionStateRecovery: {
-    maxDisconnectionDuration: Infinity,
-    skipMiddlewares: true,
-    },
+    // connectionStateRecovery: {
+    // maxDisconnectionDuration: Infinity,
+    // skipMiddlewares: true,
+    // },
     cors: {
         origin: '*',
         methods: ["GET", "POST","HEAD"]
