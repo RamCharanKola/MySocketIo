@@ -7,12 +7,10 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, 
     {
-    pingInterval: 120000,
-    pingTimeout: 360000,
+    // pingInterval: 120000,
+    pingTimeout: 10000,
     connectionStateRecovery: {
-    // the backup duration of the sessions and the packets
-    maxDisconnectionDuration: 60 * 60 * 1000,
-    // whether to skip middlewares upon successful recovery
+    maxDisconnectionDuration:  20 * 1000,
     skipMiddlewares: true,
     },
     cors: {
@@ -28,6 +26,11 @@ var customerID = [];
 var partnerID = [];
 
 io.on('connection', (socket) => {
+    if (socket.recovered) {
+        console.log('Connection Recovered ');
+      } else {
+        console.log('New Connection Established ');
+      }
     console.log(socket.handshake.query.userType);
     console.log('[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[');
     if(customerID.length > 0 && customerID != ''){
@@ -79,7 +82,10 @@ io.on('connection', (socket) => {
         console.log('Received Customer Status', co);
         console.log('----------------------------------');
         if(co == 'Customer Online')  io.emit('customer online', 'Customer Online');
-        if(co == 'Customer Offline') io.emit('customer offline', 'Customer Offline');
+        if(co == 'Customer Offline') {
+            io.emit('customer offline', 'Customer Offline');
+            customerID.pop()
+        }
     });
 
     socket.on('partner-status', (po) =>{
@@ -87,10 +93,13 @@ io.on('connection', (socket) => {
             console.log('Received Partner Status', po);
             console.log('____________________________________________________________');
             if(po == 'Partner Online') io.emit('partner online', 'Partner Online');
-            if(po == 'Partner Offline') io.emit('partner offline', 'Partner Offline');
+            if(po == 'Partner Offline') {
+                io.emit('partner offline', 'Partner Offline');
+                partnerID.pop()
+            }
     });
 
-    socket.on('disconnect', (d) => {
+    io.on('disconnect', (d) => {
         console.log('socket disconnected Reason : ',d);
         if(customerID.includes(socket.id)){
             console.log('CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
